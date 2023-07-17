@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using detritusdiet.DataAccessLayer;
 using detritusdiet.Db;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -26,6 +27,7 @@ namespace detritusdiet
 
             // Data access
             var connectionString = builder.Configuration.GetConnectionString("AppSqlServerDb");
+
             // @TODO - proper secrets management:
             // Right now, just use dotnet-secrets locally for dev
             var username = builder.Configuration["DetritusDietSecrets:DbUser"];
@@ -38,7 +40,9 @@ namespace detritusdiet
             {
                 options.UseSqlServer(connectionString);
             });
-            
+
+            builder.Services.AddScoped<IMealRepository, MealRepository>();
+            builder.Services.AddScoped<IFoodRepository, FoodRepository>();            
 
             var app = builder.Build();
 
