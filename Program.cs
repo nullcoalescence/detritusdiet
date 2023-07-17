@@ -25,9 +25,18 @@ namespace detritusdiet
             builder.Services.AddControllersWithViews();
 
             // Data access
+            var connectionString = builder.Configuration.GetConnectionString("AppSqlServerDb");
+            // @TODO - proper secrets management:
+            // Right now, just use dotnet-secrets locally for dev
+            var username = builder.Configuration["DetritusDietSecrets:DbUser"];
+            var password = builder.Configuration["DetritusDietSecrets:DbPass"];
+
+            connectionString += $";user id={username};password={password}";
+
+            
             builder.Services.AddDbContext<DietContext>(options =>
             {
-                options.UseSqlServer(builder.Configuration.GetConnectionString("AppSqlServerDb"));
+                options.UseSqlServer(connectionString);
             });
             
 
