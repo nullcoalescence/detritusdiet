@@ -1,3 +1,9 @@
+using System;
+using System.IO;
+using detritusdiet.Db;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+
 namespace detritusdiet
 {
     public class Program
@@ -6,8 +12,33 @@ namespace detritusdiet
         {
             var builder = WebApplication.CreateBuilder(args);
 
+            // Add appsettings.json
+            var configBuilder = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
+
+            IConfiguration config = configBuilder.Build();
+
+            builder.Services.Configure<IConfiguration>(config);
+
             // Add services to the container.
             builder.Services.AddControllersWithViews();
+
+            // Data access
+            var connectionString = builder.Configuration.GetConnectionString("AppSqlServerDb");
+            // @TODO - proper secrets management:
+            // Right now, just use dotnet-secrets locally for dev
+            var username = builder.Configuration["DetritusDietSecrets:DbUser"];
+            var password = builder.Configuration["DetritusDietSecrets:DbPass"];
+
+            connectionString += $";user id={username};password={password}";
+
+            
+            builder.Services.AddDbContext<DietContext>(options =>
+            {
+                options.UseSqlServer(connectionString);
+            });
+            
 
             var app = builder.Build();
 
